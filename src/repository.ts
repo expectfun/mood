@@ -55,6 +55,11 @@ export async function findByTelegram(username: string): Promise<Participant | nu
   return row ? mapRow(row) : null;
 }
 
+export async function findById(id: number): Promise<Participant | null> {
+  const row = await database.get<any>("SELECT * FROM participants WHERE id = ? LIMIT 1", [id]);
+  return row ? mapRow(row) : null;
+}
+
 export async function createParticipant(username: string, name: string): Promise<Participant> {
   await database.run(
     `INSERT INTO participants (name, telegram, custom_1, custom_2) VALUES (?, ?, 'grey', '')`,

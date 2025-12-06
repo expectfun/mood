@@ -150,3 +150,13 @@ It would be better to have a convenient way of seeing the whole profile of other
 Suggested adding a “View profile” inline button on each search card that opens a separate detailed message (or replaces the message) with the full profile fields plus a Back button to return to the search list—keeping the list concise while offering one-tap detail access.
 - Tags: [suggestion, search, ux, log]
 
+### 22:51 UTC
+**User**
+git commit the current version, then implement your suggestion
+- Tags: [request, git, feature]
+
+### 22:51 UTC
+**Assistant**
+Committed current state. Implemented “View profile” flow in search results: each card now has a View button that opens a full-profile message with a back-to-results button; added public profile formatter and repo lookup by id, updated search keyboards accordingly.
+- Tags: [commit, feature, search, ux, log]
+

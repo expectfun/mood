@@ -8,6 +8,7 @@ import {
   upsertParticipantFromMessage,
   upsertStatus,
   findByTelegram,
+  findById,
 } from "./repository.ts";
 import {
   helpText,
@@ -18,6 +19,7 @@ import {
   renderSearchResults,
   statusView,
   updateFieldPicker,
+  publicProfileView,
 } from "./views.ts";
 import { SessionState, StatusColor } from "./types.ts";
 import { logger } from "./logging.ts";
@@ -237,6 +239,28 @@ bot.on("callback_query", async (cb) => {
     if (data === "search:clear") {
       const current = session.search || { availability: "green-yellow", page: 0, pageSize: 5 };
       session.search = { ...current, query: undefined, page: 0 };
+      await handleSearch(chatId, username, session);
+      return;
+    }
+
+    if (data.startsWith("search:view:")) {
+      const id = Number(data.split(":")[2]);
+      if (!Number.isFinite(id)) return;
+      const target = await findById(id);
+      if (!target) {
+        await bot.sendMessage(chatId, "Profile not found.");
+        return;
+      }
+      const detail = publicProfileView(target);
+      await bot.sendMessage(chatId, detail.text, {
+        reply_markup: {
+          inline_keyboard: [[{ text: "⬅️ Back to results", callback_data: "search:back" }]],
+        },
+      });
+      return;
+    }
+
+    if (data === "search:back") {
       await handleSearch(chatId, username, session);
       return;
     }

@@ -153,6 +153,29 @@ export function searchKeyboard(filters: SearchFilters, hasNext: boolean): Telegr
   };
 }
 
+export function searchKeyboardWithViews(
+  filters: SearchFilters,
+  hasNext: boolean,
+  viewButtons: TelegramBot.InlineKeyboardButton[][]
+): TelegramBot.InlineKeyboardMarkup {
+  return {
+    inline_keyboard: [
+      ...viewButtons,
+      [
+        { text: "Green", callback_data: "search:filter:green" },
+        { text: "Green+Yellow", callback_data: "search:filter:green-yellow" },
+        { text: "All", callback_data: "search:filter:all" },
+      ],
+      [
+        { text: "Prev", callback_data: "search:page:prev" },
+        { text: "Next", callback_data: hasNext ? "search:page:next" : "search:page:none" },
+      ],
+      [{ text: "Clear query", callback_data: "search:clear" }],
+      [{ text: "⬅️ Back", callback_data: "menu:back" }],
+    ],
+  };
+}
+
 export function renderSearchResults(
   results: Participant[],
   filters: SearchFilters
@@ -178,6 +201,13 @@ export function renderSearchResults(
       .join("\n");
   });
 
+  const viewButtons = results.map((r) => [
+    {
+      text: `View ${r.name}`.slice(0, 30),
+      callback_data: `search:view:${r.id}`,
+    },
+  ]);
+
   return {
     text: [
       `Search/browse: send a word to filter by name, role, skills, or looking for.`,
@@ -187,8 +217,26 @@ export function renderSearchResults(
       "",
       cards.join("\n\n"),
     ].join("\n"),
-    keyboard: searchKeyboard(filters, results.length === filters.pageSize),
+    keyboard: searchKeyboardWithViews(filters, results.length === filters.pageSize, viewButtons),
   };
+}
+
+export function publicProfileView(user: Participant): { text: string } {
+  const text = [
+    `👤 ${user.name} ${user.telegram ? `(@${user.telegram})` : ""}`,
+    `${STATUS_EMOJI[user.custom_1]} ${statusLabel(user.custom_1)}${user.custom_2 ? ` — “${user.custom_2}”` : ""}`,
+    `Bio: ${user.bio ?? "—"}`,
+    `Skills: ${formatList(user.skills)}`,
+    `Looking for: ${formatList(user.looking_for)}`,
+    `Can help: ${formatList(user.can_help)}`,
+    `Needs help: ${formatList(user.needs_help)}`,
+    `Startup: ${user.startup_name ?? "—"} (${user.startup_stage ?? "—"})`,
+    `About startup: ${user.startup_description ?? "—"}`,
+    `LinkedIn: ${user.linkedin ?? "—"}`,
+    `Email: ${user.email ?? "—"}`,
+    `AI usage: ${user.ai_usage ?? "—"}`,
+  ].join("\n");
+  return { text };
 }
 
 export function helpText(): string {
