@@ -190,3 +190,13 @@ On the greeting screen, in addition to "Set and share your availability for the 
 Updated greeting copy on the main menu to mention finding other attendees by availability and search keywords.
 - Tags: [fix, ux, menu, log]
 
+### 23:03 UTC
+**User**
+In the main menu, change the order of the buttons: switch the "Browse / Search" and "My Profile" buttons.
+- Tags: [request, ux, menu]
+
+### 23:03 UTC
+**Assistant**
+Reordered main menu buttons: row 1 now Set Status / My Profile; row 2 Browse/Search / Help.
+- Tags: [fix, ux, menu, log]
+

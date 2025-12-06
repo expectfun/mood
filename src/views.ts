@@ -21,10 +21,10 @@ export function mainMenuKeyboard(): TelegramBot.InlineKeyboardMarkup {
     inline_keyboard: [
       [
         { text: "Set Status", callback_data: "menu:set_status" },
-        { text: "Browse / Search", callback_data: "menu:search" },
+        { text: "My Profile", callback_data: "menu:profile" },
       ],
       [
-        { text: "My Profile", callback_data: "menu:profile" },
+        { text: "Browse / Search", callback_data: "menu:search" },
         { text: "Help / About", callback_data: "menu:help" },
       ],
     ],
