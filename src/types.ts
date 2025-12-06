@@ -1,4 +1,5 @@
 export type StatusColor = "green" | "yellow" | "red" | "grey";
+export type Language = "en" | "ru" | "ka";
 
 export interface Participant {
   id: number;
@@ -19,6 +20,8 @@ export interface Participant {
   ai_usage: string | null;
   custom_1: StatusColor; // status color
   custom_2: string | null; // status text
+  custom_3?: string | null; // reserved
+  language: Language;
   custom_array_1: string[]; // extra tags
   updated_at: string;
 }
@@ -28,6 +31,7 @@ export interface SearchFilters {
   query?: string;
   page: number;
   pageSize: number;
+  lang?: Language;
 }
 
 export interface SessionState {

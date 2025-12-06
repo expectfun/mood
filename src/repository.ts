@@ -1,5 +1,5 @@
 import { database } from "./db.ts";
-import { SearchFilters, Participant, StatusColor } from "./types.ts";
+import { SearchFilters, Participant, StatusColor, Language } from "./types.ts";
 import { availabilityOrderExpr, clampText, parseListInput, safeUrl } from "./utils.ts";
 
 function parseJsonArray(value: string | null): string[] {
@@ -42,6 +42,8 @@ function mapRow(row: any): Participant {
     ai_usage: row.ai_usage,
     custom_1: (row.custom_1 || "grey") as StatusColor,
     custom_2: row.custom_2,
+    custom_3: row.custom_3,
+    language: (row.custom_3 as Language) || "en",
     custom_array_1: parseJsonArray(row.custom_array_1),
     updated_at: row.updated_at,
   };
@@ -62,7 +64,7 @@ export async function findById(id: number): Promise<Participant | null> {
 
 export async function createParticipant(username: string, name: string): Promise<Participant> {
   await database.run(
-    `INSERT INTO participants (name, telegram, custom_1, custom_2) VALUES (?, ?, 'grey', '')`,
+    `INSERT INTO participants (name, telegram, custom_1, custom_2, custom_3) VALUES (?, ?, 'grey', '', 'en')`,
     [name, username]
   );
   const created = await findByTelegram(username);
@@ -100,6 +102,7 @@ export async function updateField(
     "needs_help",
     "ai_usage",
     "custom_2",
+    "custom_3",
   ]);
   if (!allowed.has(field)) throw new Error(`Field ${field} not allowed`);
 
@@ -107,6 +110,10 @@ export async function updateField(
     Array.isArray(value) && value ? JSON.stringify(value) : typeof value === "string" ? value : null;
 
   await database.run(`UPDATE participants SET ${field} = ? WHERE id = ?`, [dbValue, id]);
+}
+
+export async function setLanguage(id: number, lang: Language): Promise<void> {
+  await database.run(`UPDATE participants SET custom_3 = ? WHERE id = ?`, [lang, id]);
 }
 
 export async function searchParticipants(filters: SearchFilters): Promise<Participant[]> {
@@ -171,6 +178,8 @@ export function sanitizeProfileInput(field: string, value: string): string | str
       return clampText(value, 200);
     case "ai_usage":
       return clampText(value, 120);
+    case "custom_3":
+      return clampText(value, 5);
     case "skills":
     case "looking_for":
     case "can_help":

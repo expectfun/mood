@@ -9,6 +9,7 @@ import {
   upsertStatus,
   findByTelegram,
   findById,
+  setLanguage,
 } from "./repository.ts";
 import {
   helpText,
@@ -20,9 +21,11 @@ import {
   statusView,
   updateFieldPicker,
   publicProfileView,
+  helpView,
 } from "./views.ts";
-import { SessionState, StatusColor } from "./types.ts";
+import { SessionState, StatusColor, Language } from "./types.ts";
 import { logger } from "./logging.ts";
+import { t } from "./i18n.ts";
 
 dotenv.config();
 
@@ -57,7 +60,7 @@ async function ensureUser(msg: TelegramBot.Message) {
 async function showMenu(chatId: number, username: string) {
   const user = await findByTelegram(username);
   if (!user) return;
-  await bot.sendMessage(chatId, mainMenuText(user), { reply_markup: mainMenuKeyboard() });
+  await bot.sendMessage(chatId, mainMenuText(user), { reply_markup: mainMenuKeyboard(user.language || "en") });
 }
 
 async function handleStatus(chatId: number, username: string) {
@@ -81,24 +84,27 @@ async function handleProfile(chatId: number, username: string) {
 async function handleSearch(chatId: number, username: string, incoming?: SessionState) {
   const session = getSession(chatId);
   session.mode = "search";
-  const filters = incoming?.search || session.search || { availability: "green-yellow", page: 0, pageSize: 5 };
+  const filters =
+    incoming?.search || session.search || { availability: "green-yellow", page: 0, pageSize: 5, lang: "en" as Language };
   session.search = filters;
   const user = await findByTelegram(username);
   if (!user) return;
+  filters.lang = user.language || "en";
   const results = await searchParticipants(filters);
   const payload = renderSearchResults(results, filters, botUsername);
   await bot.sendMessage(chatId, payload.text, { reply_markup: payload.keyboard, parse_mode: "HTML", disable_web_page_preview: true });
 }
 
-async function showPublicProfile(chatId: number, id: number) {
+async function showPublicProfile(chatId: number, id: number, lang?: Language) {
   const target = await findById(id);
   if (!target) {
     await bot.sendMessage(chatId, "Profile not found.");
     return;
   }
+  if (lang) target.language = lang;
   const detail = publicProfileView(target);
   await bot.sendMessage(chatId, detail.text, {
-    reply_markup: { inline_keyboard: [[{ text: "⬅️ Back to search", callback_data: "menu:search" }]] },
+    reply_markup: { inline_keyboard: [[{ text: t(lang || "en", "btn_back_search"), callback_data: "menu:search" }]] },
     parse_mode: "HTML",
     disable_web_page_preview: true,
   });
@@ -111,7 +117,7 @@ bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
     if (payload.startsWith("vp_")) {
       const id = Number(payload.replace("vp_", ""));
       if (Number.isFinite(id)) {
-        await showPublicProfile(msg.chat.id, id);
+        await showPublicProfile(msg.chat.id, id, user.language);
         return;
       }
     }
@@ -153,8 +159,9 @@ bot.onText(/\/search/, async (msg) => {
 
 bot.onText(/\/help/, async (msg) => {
   try {
-    await ensureUser(msg);
-    await bot.sendMessage(msg.chat.id, helpText());
+    const user = await ensureUser(msg);
+    const view = helpView(user.language || "en");
+    await bot.sendMessage(msg.chat.id, view.text, { reply_markup: view.keyboard });
   } catch (err) {
     if ((err as Error).message !== "username_missing")
       logger.error("help command failed", { err: (err as Error).message });
@@ -200,7 +207,10 @@ bot.on("callback_query", async (cb) => {
       return;
     }
     if (data === "menu:help") {
-      await bot.sendMessage(chatId, helpText());
+      const user = await findByTelegram(username);
+      const lang = user?.language || "en";
+      const view = helpView(lang);
+      await bot.sendMessage(chatId, view.text, { reply_markup: view.keyboard });
       return;
     }
     if (data === "menu:back") {
@@ -220,7 +230,8 @@ bot.on("callback_query", async (cb) => {
     }
 
     if (data === "profile:update") {
-      const picker = updateFieldPicker();
+      const user = await findByTelegram(username);
+      const picker = updateFieldPicker(user?.language || "en");
       session.mode = "update_field";
       session.pendingField = undefined;
       await bot.sendMessage(chatId, picker.text, { reply_markup: picker.keyboard });
@@ -243,7 +254,7 @@ bot.on("callback_query", async (cb) => {
         field && user
           ? (user as any)[field] ?? (Array.isArray((user as any)[field]) ? [] : null)
           : null;
-      await bot.sendMessage(chatId, promptForField(field!, current));
+      await bot.sendMessage(chatId, promptForField(field!, current, user?.language || "en"));
       return;
     }
 
@@ -254,6 +265,7 @@ bot.on("callback_query", async (cb) => {
         query: session.search?.query,
         page: 0,
         pageSize: session.search?.pageSize || 5,
+        lang: (await findByTelegram(username))?.language || "en",
       };
       await handleSearch(chatId, username, session);
       return;
@@ -273,6 +285,17 @@ bot.on("callback_query", async (cb) => {
       const nextPage = dir === "next" ? current.page + 1 : Math.max(0, current.page - 1);
       session.search = { ...current, page: nextPage };
       await handleSearch(chatId, username, session);
+      return;
+    }
+
+    if (data.startsWith("lang:set:")) {
+      const lang = data.split(":")[2] as Language;
+      const user = await findByTelegram(username);
+      if (!user) return;
+      await setLanguage(user.id, lang);
+      user.language = lang;
+      await bot.sendMessage(chatId, t(lang, "lang_switched"));
+      await showMenu(chatId, username);
       return;
     }
   } catch (err) {
@@ -305,7 +328,13 @@ bot.on("message", async (msg) => {
     }
 
     if (session.mode === "search") {
-      session.search = session.search || { availability: "green-yellow", page: 0, pageSize: 5 };
+      session.search = session.search || {
+        availability: "green-yellow",
+        page: 0,
+        pageSize: 5,
+        lang: user.language || "en",
+      };
+      session.search.lang = user.language || "en";
       session.search.query = msg.text.trim();
       session.search.page = 0;
       await handleSearch(chatId, user.telegram!, session);

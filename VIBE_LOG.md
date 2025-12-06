@@ -220,3 +220,13 @@ Currently, the search functions searches the query over specific fields in users
 Expanded text search to cover all key profile fields (name, startup fields, skills, looking_for, bio, can_help, needs_help, ai_usage, email, LinkedIn, status text, startup stage) instead of a limited subset.
 - Tags: [fix, search, log]
 
+### 23:16 UTC
+**User**
+Now I'd like to add a localization: thanslate all the UI texts to Russian and to Georgian, and let the user change the preferred language in the settings (Help / Settings page). Is it easy for you?
+- Tags: [request, i18n]
+
+### 23:16 UTC
+**Assistant**
+Implemented i18n (en/ru/ka): added translation dictionaries, language selector in Help/Settings, stored language in custom_3, localized menus/status/profile/search/help, and expanded search filters to carry language context. Added HTML escaping for localized rendering.
+- Tags: [feature, i18n, ux, log]
+

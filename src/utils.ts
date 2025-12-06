@@ -7,19 +7,6 @@ export const STATUS_EMOJI: Record<StatusColor, string> = {
   grey: "⚪️",
 };
 
-export function statusLabel(color: StatusColor): string {
-  switch (color) {
-    case "green":
-      return "Green (open)";
-    case "yellow":
-      return "Yellow (conditional)";
-    case "red":
-      return "Red (do not disturb)";
-    default:
-      return "Grey (not set)";
-  }
-}
-
 export function clampText(text: string | null | undefined, max: number): string {
   if (!text) return "";
   return text.slice(0, max).trim();
