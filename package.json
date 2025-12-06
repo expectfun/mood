@@ -1,0 +1,22 @@
+{
+  "name": "mood-bot",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Telegram-only traffic light availability bot (Bun + TypeScript + SQLite).",
+  "scripts": {
+    "start": "bun run src/bot.ts",
+    "import": "bun run src/scripts/import.ts",
+    "build": "bun build src/bot.ts --outdir dist",
+    "lint": "bun check"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.63.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/sqlite3": "^3.1.10"
+  }
+}
+
