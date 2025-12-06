@@ -230,3 +230,13 @@ Now I'd like to add a localization: thanslate all the UI texts to Russian and to
 Implemented i18n (en/ru/ka): added translation dictionaries, language selector in Help/Settings, stored language in custom_3, localized menus/status/profile/search/help, and expanded search filters to carry language context. Added HTML escaping for localized rendering.
 - Tags: [feature, i18n, ux, log]
 
+### 23:20 UTC
+**User**
+On the Help / Settings screen, in the message add an empty line above the "Use language buttons below to switch UI language." line to visually separate it. On the inline buttons to choose languages, add an emoji before tha language name to help visually discern it
+- Tags: [request, i18n, ux]
+
+### 23:20 UTC
+**Assistant**
+Updated Help/Settings copy to add a spacer line before the language hint and prefixed language buttons with flags (🇬🇧/🇷🇺/🇬🇪).
+- Tags: [fix, i18n, ux, log]
+
