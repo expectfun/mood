@@ -153,32 +153,10 @@ export function searchKeyboard(filters: SearchFilters, hasNext: boolean): Telegr
   };
 }
 
-export function searchKeyboardWithViews(
-  filters: SearchFilters,
-  hasNext: boolean,
-  viewButtons: TelegramBot.InlineKeyboardButton[][]
-): TelegramBot.InlineKeyboardMarkup {
-  return {
-    inline_keyboard: [
-      ...viewButtons,
-      [
-        { text: "Green", callback_data: "search:filter:green" },
-        { text: "Green+Yellow", callback_data: "search:filter:green-yellow" },
-        { text: "All", callback_data: "search:filter:all" },
-      ],
-      [
-        { text: "Prev", callback_data: "search:page:prev" },
-        { text: "Next", callback_data: hasNext ? "search:page:next" : "search:page:none" },
-      ],
-      [{ text: "Clear query", callback_data: "search:clear" }],
-      [{ text: "⬅️ Back", callback_data: "menu:back" }],
-    ],
-  };
-}
-
 export function renderSearchResults(
   results: Participant[],
-  filters: SearchFilters
+  filters: SearchFilters,
+  botUsername?: string
 ): { text: string; keyboard: TelegramBot.InlineKeyboardMarkup } {
   if (results.length === 0) {
     return {
@@ -190,23 +168,21 @@ export function renderSearchResults(
   const cards = results.map((r) => {
     const link = r.telegram ? `@${r.telegram}` : null;
     const nameLine = link ? `${STATUS_EMOJI[r.custom_1]} ${r.name} — ${link}` : `${STATUS_EMOJI[r.custom_1]} ${r.name}`;
+    const viewLink =
+      botUsername && r.id
+        ? `See full profile: https://t.me/${botUsername}?start=vp_${r.id}`
+        : null;
     return [
       nameLine || undefined,
       r.custom_2 ? `“${r.custom_2}”` : null,
       r.bio ? `Bio: ${r.bio}` : null,
       r.skills.length ? `Skills: ${formatList(r.skills)}` : null,
       r.looking_for.length ? `Looking for: ${formatList(r.looking_for)}` : null,
+      viewLink,
     ]
       .filter(Boolean)
       .join("\n");
   });
-
-  const viewButtons = results.map((r) => [
-    {
-      text: `View ${r.name}`.slice(0, 30),
-      callback_data: `search:view:${r.id}`,
-    },
-  ]);
 
   return {
     text: [
@@ -217,7 +193,7 @@ export function renderSearchResults(
       "",
       cards.join("\n\n"),
     ].join("\n"),
-    keyboard: searchKeyboardWithViews(filters, results.length === filters.pageSize, viewButtons),
+    keyboard: searchKeyboard(filters, results.length === filters.pageSize),
   };
 }
 

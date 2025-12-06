@@ -34,6 +34,7 @@ if (!token) {
 const bot = new TelegramBot(token, { polling: true });
 
 const sessions = new Map<number, SessionState>();
+let botUsername: string | undefined;
 
 function getSession(chatId: number): SessionState {
   const existing = sessions.get(chatId) || { mode: undefined };
@@ -85,13 +86,33 @@ async function handleSearch(chatId: number, username: string, incoming?: Session
   const user = await findByTelegram(username);
   if (!user) return;
   const results = await searchParticipants(filters);
-  const payload = renderSearchResults(results, filters);
+  const payload = renderSearchResults(results, filters, botUsername);
   await bot.sendMessage(chatId, payload.text, { reply_markup: payload.keyboard });
 }
 
-bot.onText(/\/start/, async (msg) => {
+async function showPublicProfile(chatId: number, id: number) {
+  const target = await findById(id);
+  if (!target) {
+    await bot.sendMessage(chatId, "Profile not found.");
+    return;
+  }
+  const detail = publicProfileView(target);
+  await bot.sendMessage(chatId, detail.text, {
+    reply_markup: { inline_keyboard: [[{ text: "⬅️ Back to search", callback_data: "menu:search" }]] },
+  });
+}
+
+bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
   try {
     const user = await ensureUser(msg);
+    const payload = match && match[1] ? match[1].trim() : "";
+    if (payload.startsWith("vp_")) {
+      const id = Number(payload.replace("vp_", ""));
+      if (Number.isFinite(id)) {
+        await showPublicProfile(msg.chat.id, id);
+        return;
+      }
+    }
     await showMenu(msg.chat.id, user.telegram!);
   } catch (err) {
     if ((err as Error).message !== "username_missing") logger.error("start failed", { err: (err as Error).message });
@@ -243,28 +264,6 @@ bot.on("callback_query", async (cb) => {
       return;
     }
 
-    if (data.startsWith("search:view:")) {
-      const id = Number(data.split(":")[2]);
-      if (!Number.isFinite(id)) return;
-      const target = await findById(id);
-      if (!target) {
-        await bot.sendMessage(chatId, "Profile not found.");
-        return;
-      }
-      const detail = publicProfileView(target);
-      await bot.sendMessage(chatId, detail.text, {
-        reply_markup: {
-          inline_keyboard: [[{ text: "⬅️ Back to results", callback_data: "search:back" }]],
-        },
-      });
-      return;
-    }
-
-    if (data === "search:back") {
-      await handleSearch(chatId, username, session);
-      return;
-    }
-
     if (data.startsWith("search:page:")) {
       const dir = data.split(":")[2];
       if (dir !== "next" && dir !== "prev") return;
@@ -322,6 +321,13 @@ bot.on("message", async (msg) => {
 
 async function bootstrap() {
   await initSchema();
+  try {
+    const me = await bot.getMe();
+    botUsername = me.username;
+    logger.info("Bot username resolved", { botUsername });
+  } catch (err) {
+    logger.warn("Could not resolve bot username", { err: (err as Error).message });
+  }
   logger.info("Bot initialized and polling");
 }
 

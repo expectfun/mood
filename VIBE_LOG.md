@@ -160,3 +160,13 @@ git commit the current version, then implement your suggestion
 Committed current state. Implemented “View profile” flow in search results: each card now has a View button that opens a full-profile message with a back-to-results button; added public profile formatter and repo lookup by id, updated search keyboards accordingly.
 - Tags: [commit, feature, search, ux, log]
 
+### 22:56 UTC
+**User**
+There's too much inline buttons now on the search / browse page. Instead of adding a button for each of the participants listed, can you instead create links in the message with the list, so underneath every short listing of a person with some of the fields there would be a link "see the full profile"? 
+- Tags: [request, search, ux]
+
+### 22:56 UTC
+**Assistant**
+Changed search results to remove per-user inline buttons; now each card shows a text link to the bot with `start=vp_<id>` for full profiles. Added deep-link handling via /start payload, resolved bot username on boot, and kept a single Back-to-search button on detail view.
+- Tags: [fix, search, ux, log]
+
