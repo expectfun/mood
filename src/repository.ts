@@ -122,9 +122,23 @@ export async function searchParticipants(filters: SearchFilters): Promise<Partic
   if (filters.query) {
     const like = `%${filters.query.toLowerCase()}%`;
     where.push(
-      `(lower(name) LIKE ? OR lower(startup_name) LIKE ? OR lower(startup_description) LIKE ? OR lower(looking_for) LIKE ? OR lower(skills) LIKE ?)`,
+      `(
+        lower(name) LIKE ?
+        OR lower(startup_name) LIKE ?
+        OR lower(startup_description) LIKE ?
+        OR lower(looking_for) LIKE ?
+        OR lower(skills) LIKE ?
+        OR lower(bio) LIKE ?
+        OR lower(can_help) LIKE ?
+        OR lower(needs_help) LIKE ?
+        OR lower(ai_usage) LIKE ?
+        OR lower(email) LIKE ?
+        OR lower(linkedin) LIKE ?
+        OR lower(custom_2) LIKE ?
+        OR lower(startup_stage) LIKE ?
+      )`,
     );
-    params.push(like, like, like, like, like);
+    params.push(like, like, like, like, like, like, like, like, like, like, like, like, like);
   }
 
   const limit = filters.pageSize;

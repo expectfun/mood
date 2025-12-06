@@ -210,3 +210,13 @@ In the main menu, rename "Set Status" to "My Status", and "Help / About" to "Hel
 Renamed main menu buttons: “My Status” and “Help / Settings” (ordering unchanged).
 - Tags: [fix, ux, menu, log]
 
+### 23:07 UTC
+**User**
+Currently, the search functions searches the query over specific fields in users' profiles. Make it search over all the fields instead.
+- Tags: [request, search]
+
+### 23:07 UTC
+**Assistant**
+Expanded text search to cover all key profile fields (name, startup fields, skills, looking_for, bio, can_help, needs_help, ai_usage, email, LinkedIn, status text, startup stage) instead of a limited subset.
+- Tags: [fix, search, log]
+
