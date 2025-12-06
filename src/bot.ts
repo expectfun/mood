@@ -146,11 +146,22 @@ bot.on("callback_query", async (cb) => {
     await bot.sendMessage(chatId, "Please set a Telegram username to use this bot.");
     return;
   }
-  await bot.answerCallbackQuery(cb.id);
-
   const session = getSession(chatId);
 
   try {
+    try {
+      await bot.answerCallbackQuery(cb.id);
+    } catch (err) {
+      const msg = (err as Error).message || "";
+      if (msg.includes("query is too old") || msg.includes("query ID is invalid")) {
+        logger.warn("Stale callback ignored", { cbId: cb.id });
+        return;
+      }
+      logger.error("answerCallbackQuery failed", { cbId: cb.id, err: msg });
+      await bot.sendMessage(chatId, "This action expired. Please tap again from the latest message.");
+      return;
+    }
+
     if (data === "menu:set_status") {
       await handleStatus(chatId, username);
       return;
@@ -223,6 +234,13 @@ bot.on("callback_query", async (cb) => {
       return;
     }
 
+    if (data === "search:clear") {
+      const current = session.search || { availability: "green-yellow", page: 0, pageSize: 5 };
+      session.search = { ...current, query: undefined, page: 0 };
+      await handleSearch(chatId, username, session);
+      return;
+    }
+
     if (data.startsWith("search:page:")) {
       const dir = data.split(":")[2];
       if (dir !== "next" && dir !== "prev") return;
@@ -286,5 +304,14 @@ async function bootstrap() {
 bootstrap().catch((err) => {
   logger.error("Failed to start bot", { err: err.message });
   process.exit(1);
+});
+
+bot.on("polling_error", (err) => {
+  const msg = (err as Error).message || String(err);
+  logger.warn("Polling error", { err: msg });
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.error("Unhandled rejection", { reason: String(reason) });
 });
 

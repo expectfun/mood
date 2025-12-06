@@ -35,6 +35,11 @@ export function statusView(user: Participant): { text: string; keyboard: Telegra
   const text = [
     `Status: ${STATUS_EMOJI[user.custom_1]} ${statusLabel(user.custom_1)}`,
     user.custom_2 ? `Note: “${user.custom_2}”` : "No status text yet. Send a short note to set it.",
+    "",
+    "What the colors mean:",
+    "🟢 Green — talk to me freely.",
+    "🟡 Yellow — open to some kinds of talk.",
+    "🔴 Red — not open to talking right now.",
   ].join("\n");
 
   const keyboard: TelegramBot.InlineKeyboardMarkup = {
@@ -142,6 +147,7 @@ export function searchKeyboard(filters: SearchFilters, hasNext: boolean): Telegr
         { text: "Prev", callback_data: "search:page:prev" },
         { text: "Next", callback_data: hasNext ? "search:page:next" : "search:page:none" },
       ],
+      [{ text: "Clear query", callback_data: "search:clear" }],
       [{ text: "⬅️ Back", callback_data: "menu:back" }],
     ],
   };
@@ -153,7 +159,7 @@ export function renderSearchResults(
 ): { text: string; keyboard: TelegramBot.InlineKeyboardMarkup } {
   if (results.length === 0) {
     return {
-      text: `No matches yet.\n${searchFiltersText(filters)}\nSend a text query to filter by name/role/skills/looking for.`,
+      text: `Search/browse: send a word to filter by name, role, skills, or looking for.\nUse "Clear query" to reset.\n\nNo matches yet.\n${searchFiltersText(filters)}`,
       keyboard: searchKeyboard(filters, false),
     };
   }
@@ -162,8 +168,8 @@ export function renderSearchResults(
     const link = r.telegram ? `@${r.telegram}` : null;
     const nameLine = link ? `${STATUS_EMOJI[r.custom_1]} ${r.name} — ${link}` : `${STATUS_EMOJI[r.custom_1]} ${r.name}`;
     return [
-      nameLine ? `*${nameLine}*` : undefined,
-      r.custom_2 ? `“${r.custom_2}”` : statusLabel(r.custom_1),
+      nameLine || undefined,
+      r.custom_2 ? `“${r.custom_2}”` : null,
       r.bio ? `Bio: ${r.bio}` : null,
       r.skills.length ? `Skills: ${formatList(r.skills)}` : null,
       r.looking_for.length ? `Looking for: ${formatList(r.looking_for)}` : null,
@@ -173,9 +179,14 @@ export function renderSearchResults(
   });
 
   return {
-    text: [`Results (page ${filters.page + 1})`, searchFiltersText(filters), "", cards.join("\n\n")].join(
-      "\n"
-    ),
+    text: [
+      `Search/browse: send a word to filter by name, role, skills, or looking for.`,
+      `Use "Clear query" to reset.`,
+      `Results (page ${filters.page + 1})`,
+      searchFiltersText(filters),
+      "",
+      cards.join("\n\n"),
+    ].join("\n"),
     keyboard: searchKeyboard(filters, results.length === filters.pageSize),
   };
 }
