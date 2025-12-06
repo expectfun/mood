@@ -7,7 +7,7 @@ export function mainMenuText(user: Participant): string {
   const statusText = user.custom_2 ? `“${user.custom_2}”` : "No text set.";
   return [
     `Hi ${user.name || user.telegram || "there"}!`,
-    `Set and share your availability for the event.`,
+    `Set and share your availability for the event. You can also find other attendees by availability and search keywords.`,
     ``,
     `Current status: ${statusLine}`,
     statusText,

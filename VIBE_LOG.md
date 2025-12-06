@@ -180,3 +180,13 @@ It's good, but those links like https://t.me/<bot_username>?start=vp_<id>.  are 
 Swapped raw URLs for clickable “See full profile” links using HTML parse mode; escaped dynamic text to avoid breakage. Public profile and search list now render with HTML links and previews disabled.
 - Tags: [fix, search, ux, log]
 
+### 23:01 UTC
+**User**
+On the greeting screen, in addition to "Set and share your availability for the event.", state also that the user can find other attendees based on their availability status and search keywords.
+- Tags: [request, ux, menu]
+
+### 23:01 UTC
+**Assistant**
+Updated greeting copy on the main menu to mention finding other attendees by availability and search keywords.
+- Tags: [fix, ux, menu, log]
+
