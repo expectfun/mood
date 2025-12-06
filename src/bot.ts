@@ -87,7 +87,7 @@ async function handleSearch(chatId: number, username: string, incoming?: Session
   if (!user) return;
   const results = await searchParticipants(filters);
   const payload = renderSearchResults(results, filters, botUsername);
-  await bot.sendMessage(chatId, payload.text, { reply_markup: payload.keyboard });
+  await bot.sendMessage(chatId, payload.text, { reply_markup: payload.keyboard, parse_mode: "HTML", disable_web_page_preview: true });
 }
 
 async function showPublicProfile(chatId: number, id: number) {
@@ -99,6 +99,8 @@ async function showPublicProfile(chatId: number, id: number) {
   const detail = publicProfileView(target);
   await bot.sendMessage(chatId, detail.text, {
     reply_markup: { inline_keyboard: [[{ text: "⬅️ Back to search", callback_data: "menu:search" }]] },
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
   });
 }
 

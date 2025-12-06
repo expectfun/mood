@@ -56,3 +56,13 @@ export function availabilityOrderExpr(column = "custom_1"): string {
   return `CASE ${column} WHEN 'green' THEN 1 WHEN 'yellow' THEN 2 WHEN 'grey' THEN 3 WHEN 'red' THEN 4 ELSE 5 END`;
 }
 
+export function escapeHtml(value: string | null | undefined): string {
+  if (!value) return "";
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+

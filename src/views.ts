@@ -1,5 +1,5 @@
 import { Participant, SearchFilters, StatusColor } from "./types.ts";
-import { STATUS_EMOJI, formatList, statusLabel } from "./utils.ts";
+import { STATUS_EMOJI, escapeHtml, formatList, statusLabel } from "./utils.ts";
 import TelegramBot from "node-telegram-bot-api";
 
 export function mainMenuText(user: Participant): string {
@@ -131,7 +131,7 @@ export function searchFiltersText(filters: SearchFilters): string {
       : filters.availability === "green-yellow"
       ? "Green + Yellow"
       : "Everyone";
-  const query = filters.query ? `Query: "${filters.query}"` : "No text filter";
+  const query = filters.query ? `Query: "${escapeHtml(filters.query)}"` : "No text filter";
   return `Filters: ${availability}; ${query}`;
 }
 
@@ -166,18 +166,20 @@ export function renderSearchResults(
   }
 
   const cards = results.map((r) => {
-    const link = r.telegram ? `@${r.telegram}` : null;
-    const nameLine = link ? `${STATUS_EMOJI[r.custom_1]} ${r.name} — ${link}` : `${STATUS_EMOJI[r.custom_1]} ${r.name}`;
+    const link = r.telegram ? `@${escapeHtml(r.telegram)}` : null;
+    const nameLine = link
+      ? `${STATUS_EMOJI[r.custom_1]} ${escapeHtml(r.name)} — ${link}`
+      : `${STATUS_EMOJI[r.custom_1]} ${escapeHtml(r.name)}`;
     const viewLink =
       botUsername && r.id
-        ? `See full profile: https://t.me/${botUsername}?start=vp_${r.id}`
+        ? `<a href="https://t.me/${botUsername}?start=vp_${r.id}">See full profile</a>`
         : null;
     return [
       nameLine || undefined,
-      r.custom_2 ? `“${r.custom_2}”` : null,
-      r.bio ? `Bio: ${r.bio}` : null,
-      r.skills.length ? `Skills: ${formatList(r.skills)}` : null,
-      r.looking_for.length ? `Looking for: ${formatList(r.looking_for)}` : null,
+      r.custom_2 ? `“${escapeHtml(r.custom_2)}”` : null,
+      r.bio ? `Bio: ${escapeHtml(r.bio)}` : null,
+      r.skills.length ? `Skills: ${escapeHtml(formatList(r.skills))}` : null,
+      r.looking_for.length ? `Looking for: ${escapeHtml(formatList(r.looking_for))}` : null,
       viewLink,
     ]
       .filter(Boolean)
@@ -199,18 +201,18 @@ export function renderSearchResults(
 
 export function publicProfileView(user: Participant): { text: string } {
   const text = [
-    `👤 ${user.name} ${user.telegram ? `(@${user.telegram})` : ""}`,
-    `${STATUS_EMOJI[user.custom_1]} ${statusLabel(user.custom_1)}${user.custom_2 ? ` — “${user.custom_2}”` : ""}`,
-    `Bio: ${user.bio ?? "—"}`,
-    `Skills: ${formatList(user.skills)}`,
-    `Looking for: ${formatList(user.looking_for)}`,
-    `Can help: ${formatList(user.can_help)}`,
-    `Needs help: ${formatList(user.needs_help)}`,
-    `Startup: ${user.startup_name ?? "—"} (${user.startup_stage ?? "—"})`,
-    `About startup: ${user.startup_description ?? "—"}`,
-    `LinkedIn: ${user.linkedin ?? "—"}`,
-    `Email: ${user.email ?? "—"}`,
-    `AI usage: ${user.ai_usage ?? "—"}`,
+    `👤 ${escapeHtml(user.name)} ${user.telegram ? `(@${escapeHtml(user.telegram)})` : ""}`,
+    `${STATUS_EMOJI[user.custom_1]} ${statusLabel(user.custom_1)}${user.custom_2 ? ` — “${escapeHtml(user.custom_2)}”` : ""}`,
+    `Bio: ${escapeHtml(user.bio ?? "—")}`,
+    `Skills: ${escapeHtml(formatList(user.skills))}`,
+    `Looking for: ${escapeHtml(formatList(user.looking_for))}`,
+    `Can help: ${escapeHtml(formatList(user.can_help))}`,
+    `Needs help: ${escapeHtml(formatList(user.needs_help))}`,
+    `Startup: ${escapeHtml(user.startup_name ?? "—")} (${escapeHtml(user.startup_stage ?? "—")})`,
+    `About startup: ${escapeHtml(user.startup_description ?? "—")}`,
+    `LinkedIn: ${escapeHtml(user.linkedin ?? "—")}`,
+    `Email: ${escapeHtml(user.email ?? "—")}`,
+    `AI usage: ${escapeHtml(user.ai_usage ?? "—")}`,
   ].join("\n");
   return { text };
 }

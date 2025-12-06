@@ -170,3 +170,13 @@ There's too much inline buttons now on the search / browse page. Instead of addi
 Changed search results to remove per-user inline buttons; now each card shows a text link to the bot with `start=vp_<id>` for full profiles. Added deep-link handling via /start payload, resolved bot username on boot, and kept a single Back-to-search button on detail view.
 - Tags: [fix, search, ux, log]
 
+### 22:59 UTC
+**User**
+It's good, but those links like https://t.me/<bot_username>?start=vp_<id>.  are long and don't seem pretty. Instead of showing it to the user directly, can we make the words "See full profile" act as an active link with that URL, so the user would see nice words and click on them?
+- Tags: [request, search, ux]
+
+### 22:59 UTC
+**Assistant**
+Swapped raw URLs for clickable “See full profile” links using HTML parse mode; escaped dynamic text to avoid breakage. Public profile and search list now render with HTML links and previews disabled.
+- Tags: [fix, search, ux, log]
+
