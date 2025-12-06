@@ -200,3 +200,13 @@ In the main menu, change the order of the buttons: switch the "Browse / Search" 
 Reordered main menu buttons: row 1 now Set Status / My Profile; row 2 Browse/Search / Help.
 - Tags: [fix, ux, menu, log]
 
+### 23:04 UTC
+**User**
+In the main menu, rename "Set Status" to "My Status", and "Help / About" to "Help / Settings"
+- Tags: [request, ux, menu]
+
+### 23:04 UTC
+**Assistant**
+Renamed main menu buttons: “My Status” and “Help / Settings” (ordering unchanged).
+- Tags: [fix, ux, menu, log]
+

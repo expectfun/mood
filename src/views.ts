@@ -20,12 +20,12 @@ export function mainMenuKeyboard(): TelegramBot.InlineKeyboardMarkup {
   return {
     inline_keyboard: [
       [
-        { text: "Set Status", callback_data: "menu:set_status" },
+        { text: "My Status", callback_data: "menu:set_status" },
         { text: "My Profile", callback_data: "menu:profile" },
       ],
       [
         { text: "Browse / Search", callback_data: "menu:search" },
-        { text: "Help / About", callback_data: "menu:help" },
+        { text: "Help / Settings", callback_data: "menu:help" },
       ],
     ],
   };
